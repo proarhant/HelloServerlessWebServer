@@ -1,5 +1,39 @@
 # Hello Serverless WebServer
 AWS Serverless architecture deployed with Terraform.
+## URL
+http://app-lb-493631137.ap-southeast-2.elb.amazonaws.com/hello
+
+```
+module.ecs_fargate.aws_cloudwatch_metric_alarm.cpu_low[0]: Creation complete after 0s [id=project-ecs-cluster-cpu-low]
+
+Apply complete! Resources: 49 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+alb_dnsname = "app-lb-493631137.ap-southeast-2.elb.amazonaws.com"
+ecs_cluster_name = "project-ecs-cluster"
+❯ curl -i  -w  '\n' http://app-lb-493631137.ap-southeast-2.elb.amazonaws.com/hello
+HTTP/1.1 200 OK
+Date: Sun, 22 Jun 2025 22:53:19 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+OK
+❯ curl -i  -w  '\n' http://app-lb-493631137.ap-southeast-2.elb.amazonaws.com/helloNOTfound
+HTTP/1.1 404 Not Found
+Server: awselb/2.0
+Date: Sun, 22 Jun 2025 22:53:34 GMT
+Content-Type: text/plain; charset=utf-8
+Content-Length: 185
+Connection: keep-alive
+
+The endpoint you are attempting to access is either unavailable or does not exist.
+
+Please verify the URL and try again, or contact your account manager if you believe this is an error.
+```
+<img width="1321" alt="image" src="https://github.com/user-attachments/assets/67240cab-5f7e-44ce-bbe6-0f4508e2c41f" />
+
 
 # AWS Architecture Description
 
