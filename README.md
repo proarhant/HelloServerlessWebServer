@@ -63,7 +63,7 @@ AWS Serverless architecture deployed with Terraform.
 | **Data Transfer**      | 1GB NAT + 1GB ALB                     | $0.12      | [$0.09/GB NAT](https://aws.amazon.com/vpc/pricing/) + [$0.023/GB ALB](https://aws.amazon.com/elasticloadbalancing/pricing/) |
 
 ## Architecture Diagram  (generated using Mermaid Code)
-Code is placed in this location: architecture/ArchitectureMermaidDiagram.mmd
+Code is placed in this location: (https://github.com/proarhant/HelloServerlessWebServer/blob/main/architecture/ArchitectureMermaidDiagram.mmd)
 
 ```mermaid
 graph TD
