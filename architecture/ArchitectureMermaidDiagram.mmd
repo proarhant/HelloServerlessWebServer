@@ -1,0 +1,97 @@
+graph TD
+    classDef module fill:#e9f5ec,stroke:#1a9850,stroke-width:2px
+    classDef aws fill:#dfeaf5,stroke:#2171b5,stroke-width:2px
+    classDef alarm fill:#fff2cc,stroke:#f1c232,stroke-width:2px
+    classDef scale fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+
+    subgraph AWS["AWS Cloud"]
+        subgraph Net["Networking"]
+            VPC["VPC<br/>172.17.0.0/16"]
+            IG["Internet Gateway"]
+            Public["Public Subnets<br/>(2 AZs)"]
+            Private["Private Subnets<br/>(2 AZs)"]
+            NAT["NAT Gateways<br/>(2 AZs)"]
+            RT["Route Tables"]
+        end
+
+        subgraph ALB["Load Balancing"]
+            LB["Application Load Balancer"]
+            TG["Target Group<br/>port 8080"]
+            SG_LB["Security Group<br/>Allow 80 from Internet"]
+            L_Rule["Listener Rule<br/>GET /hello → Target Group"]
+            NoMatch["Default Rule<br/>All Other Requests → Alert Message"]
+        end
+
+        subgraph ECR["Container Registry"]
+            Repo["ECR Repository"]
+            LC["Lifecycle Policy<br/>(2 days retention)"]
+        end
+
+        subgraph modECS["ECS Fargate Module"]
+            class modECS module
+            Cluster["ECS Cluster"]
+            TaskDef["Task Definition<br/>256 CPU / 512 MB"]
+            Service["ECS Service<br/>2-4 replicas"]
+            Task1["Task Replica 1<br/>CPU: 78%"]
+            Task2["Task Replica 2<br/>CPU: 82%"]
+            Task3("Task Replica 3*"):::scale
+            
+            ASG["Auto Scaling<br/>CPU-based"]
+            SG_ECS["Security Group<br/>Allow 8080 from ALB"]
+            
+            subgraph CW["CloudWatch"]
+                HighCPU("HighCPU Alarm<br/>>75% for 10m"):::alarm
+                LowCPU("LowCPU Alarm<br/><10% for 15m"):::alarm
+            end
+            
+            %% Metric Flow
+            Task1 -->|CPU| HighCPU
+            Task2 -->|CPU| HighCPU
+            Task1 -->|CPU| LowCPU
+            
+            %% Scaling Triggers
+            HighCPU -->|Trigger| ASG
+            LowCPU -->|Trigger| ASG
+            ASG -->|Scale Out| Service
+            ASG -->|Scale In| Service
+            Service --> Task3
+        end
+        
+        Internet((Internet))
+        WAF["AWS WAF<br/>Web ACL"]
+        App["Node.js App<br/>on port 8080"]
+        
+        Internet -->|"HTTP<br/>Port 80"| WAF
+        WAF --> LB
+        LB -->|GET /hello| TG
+        LB -->|Other requests| NoMatch
+        TG --> Service
+        Service --> Task1
+        Service --> Task2
+        Task1 --> App
+        Task2 --> App
+        Task3 --> App
+        TaskDef --> Task1
+        TaskDef --> Task2
+        TaskDef --> Task3
+        ECR --> TaskDef
+        IG --> Public
+        Public --> NAT
+        NAT --> Private
+        Private --> SG_ECS
+        Public --> LB
+    end
+
+    class VPC,IG,Public,Private,NAT,RT aws
+    class LB,TG,SG_LB,L_Rule,NoMatch,WAF aws
+    class Repo,LC aws
+    class Cluster,TaskDef,Service,Task1,Task2,ASG,SG_ECS,CW aws
+    
+    %% Legend
+    subgraph Legend[" "]
+        direction TB
+        awsbox[AWS Resource]:::aws
+        modbox[Module]:::module
+        alarmbox[Alarm]:::alarm
+        scalebox[Scaled Task]:::scale
+    end
