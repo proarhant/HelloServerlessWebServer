@@ -34,6 +34,35 @@ Please verify the URL and try again, or contact your account manager if you beli
 ```
 <img width="1321" alt="image" src="https://github.com/user-attachments/assets/67240cab-5f7e-44ce-bbe6-0f4508e2c41f" />
 
+## Design Decisions
+
+In making architectural decisions, I considered the following hint provided in the brief document:
+
+> “Lambda, Elastic Beanstalk and Kubernetes are quick to set up, but may not show off as much skill as other techniques”
+
+With this in mind, I explored the trade-offs between using **API Gateway** and an **Application Load Balancer (ALB)** for a serverless, container-based API architecture. I also evaluated a combination of **ECS**, **API Gateway**, and **ALB** as part of the design options.
+
+Ultimately, for our use case, my goal was to deliver a solution that strikes a balance between **technical credibility**, **cost efficiency**, and **avoiding unnecessary complexity**.
+
+For our use case, I believe that an **Application Load Balancer (ALB)** integrated with **AWS WAF** and backed by **ECS Fargate** is a strong candidate for hosting a web API capable of serving one million users per month.
+
+In a production-grade environment, additional AWS services such as **AWS Certificate Manager**, **CloudFront**, **Secrets Manager**, **SNS**, **Cognito**, **RDS or DynamoDB**, and **EBS/EFS** should be considered to ensure the API is **secure**, **scalable**, and **highly performant**.
+
+## References
+
+- **Field Notes: Serverless Container-based APIs with Amazon ECS and Amazon API Gateway**  
+  https://aws.amazon.com/blogs/architecture/field-notes-serverless-container-based-apis-with-amazon-ecs-and-amazon-api-gateway/
+
+- **Theoretical Cost Optimization by Amazon ECS Launch Type: Fargate vs EC2**  
+  https://aws.amazon.com/de/blogs/containers/theoretical-cost-optimization-by-amazon-ecs-launch-type-fargate-vs-ec2/
+
+## Assumptions
+Since SSL implementation was **not mandatory** for this scenario, I did not purchase a custom domain in order to keep costs low.  
+I also **time-boxed the completion** of this project to focus on delivering a functional and maintainable solution within a defined time frame.
+
+I followed best practices throughout the implementation, including writing **modular Terraform code** for the ECS Fargate component, integrating **security with AWS WAF**, using **least privilege IAM roles**, enabling **monitoring via CloudWatch**, and designing a **scalable architecture**.
+
+For this demo deployment, I intentionally did **not use a remote Terraform state backend** to simplify testing and allow others to deploy easily. The local environment only requires **Terraform**, **Docker**, and **Git** to get started. The command `terraform apply` will build and push the docker image to the ECR.
 
 # AWS Architecture Description
 
@@ -97,7 +126,8 @@ Please verify the URL and try again, or contact your account manager if you beli
 | **Data Transfer**      | 1GB NAT + 1GB ALB                     | $0.12      | [$0.09/GB NAT](https://aws.amazon.com/vpc/pricing/) + [$0.023/GB ALB](https://aws.amazon.com/elasticloadbalancing/pricing/) |
 
 ## Architecture Diagram  (generated using Mermaid Code)
-Code is placed in this location: (https://github.com/proarhant/HelloServerlessWebServer/blob/main/architecture/ArchitectureMermaidDiagram.mmd)
+Code is placed in this location: 
+(https://github.com/proarhant/HelloServerlessWebServer/blob/main/architecture/ArchitectureMermaidDiagram.mmd?short_path=44945db)
 
 ```mermaid
 graph TD
@@ -197,3 +227,4 @@ graph TD
         alarmbox[Alarm]:::alarm
         scalebox[Scaled Task]:::scale
     end
+
